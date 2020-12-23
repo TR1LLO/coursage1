@@ -10,7 +10,7 @@ public class DataArray implements Serializable {
     private SoundDataType type;
 
     public float[][] buffer;
-    private int size, blockSize, bits, channels;
+    private int size, bits, channels;
     private static float[][] decodeByteArray(byte[] bytearray, int size, int channels, int bits) {
         float[][] buffer=new float[size][channels];
         switch (bits) {
@@ -83,6 +83,24 @@ public class DataArray implements Serializable {
     }
 
     public DataArray() {}
+    public static DataArray createEmpty(int size, int bits, int channels) {
+        DataArray array = new DataArray();
+        array.size=size;
+        array.bits=bits;
+        array.channels=channels;
+        array.buffer=new float[size][channels];
+
+        int len=size*(bits/8)*channels;
+        array.chunkSize=36+len;
+        array.numChannels=(short)channels;
+        array.sampleRate=44100;
+        array.byteRate=(bits/8)*array.sampleRate*channels;
+        array.blockAlign=(short)(channels*(bits/8));
+        array.bitsPerSample=(short)bits;
+        array.subChunk2Size=len;
+        return array;
+    }
+
     public void write(int ch, int pos, float val) {
         buffer[pos][ch]=val;
     }
@@ -98,8 +116,8 @@ public class DataArray implements Serializable {
     private static final int subChunk1Size=16;      //  16-20   16
     private static final short audioFormat=1;       //  20-22   1
     private short numChannels;                      //  22-24
-    public int sampleRate;                         //  24-28
-    public int byteRate;                           //  28-32
+    public int sampleRate;                          //  24-28
+    public int byteRate;                            //  28-32
     private short blockAlign;                       //  32-34
     private short bitsPerSample;                    //  34-36
     private static final int subChunk2Id=0x64617461;//  36-40   data
@@ -207,7 +225,6 @@ public class DataArray implements Serializable {
         stream.close();
 
         data.size=bytearray.length/data.channels/(data.bits/8);
-        data.blockSize=data.size;
         data.buffer=decodeByteArray(bytearray, data.size, data.channels, data.bits);
         return data;
     }
@@ -225,9 +242,8 @@ public class DataArray implements Serializable {
     @Override
     public String toString() {
         return "DataArray ["+
-                "sz="+size+", "+
-                "bs="+blockSize+", "+
-                "ch="+channels+", "+
-                "bt="+bits+ "]";
+                "size="+size+", "+
+                "channels="+channels+", "+
+                "bits="+bits+ "]";
     }
 }

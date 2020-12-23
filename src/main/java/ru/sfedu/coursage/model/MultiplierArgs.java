@@ -4,5 +4,7 @@ package ru.sfedu.coursage.model;
  * Multiplier-parameterizing bean-package
  */
 public class MultiplierArgs extends ArgumentPack {
-  public MultiplierArgs() { }
+    public MultiplierArgs() {
+        setProcessorId(ProcessorId.MULTIPLIER);
+    }
 }

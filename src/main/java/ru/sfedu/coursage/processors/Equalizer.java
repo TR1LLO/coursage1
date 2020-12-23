@@ -14,6 +14,7 @@ public class Equalizer extends SoundDataProcessor {
 
     @Override
     public SoundData operate() {
+
         return null;
     }
 

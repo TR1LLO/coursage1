@@ -11,7 +11,7 @@ import java.util.TreeSet;
  * intermediate class-implementer of dataSource-independent API methods
  */
 public abstract class AbstractDataProvider implements DataProvider {
-    //----------------------API-------------------------------------
+    //---------------------EXTERNAL_API---------------------------------
     /**
      * run processing
      * @param args filled MainProcessor argument package
@@ -22,7 +22,7 @@ public abstract class AbstractDataProvider implements DataProvider {
         return processor.operate();
     }
     /**
-     * parse String properties into ready-to-work MainProcessorArgs package
+     * create transient MainProcessorArgs from string
      * @param properties string with properties to parse (format property=value)
      * @return MainProcessorArgs with errorCode PARSING_FAILED if missed property or found incompatible type, NO_SUCH_PROCESSOR if couldn't identify processor type
      * @throws Exception
@@ -30,7 +30,23 @@ public abstract class AbstractDataProvider implements DataProvider {
     public MainProcessorArgs createMainProcessorArgs(String properties) throws Exception {
         return MainProcessor.parse(properties, this);
     }
+    /**
+     * create persistent ArgumentPack from string
+     * @param processor target processor identifier
+     * @param properties string to parse
+     * @return SUCCEED + ArgumentPack if pack parsed and writed successfully, FAILED if parsing or writing failed
+     * @throws Exception
+     */
+    public ProviderResult<ArgumentPack> createArgumentPack(ArgumentPack.ProcessorId processor, String properties) throws Exception {
+        ArgumentPack pack = MainProcessor.createArgumentPack(processor, properties);
+        if(pack.getErrorCode()!= ArgumentPack.ErrorCode.INDEFINITE)
+            return new ProviderResult(Error.FAILED);
+        pack.setId(nextArgumentPackId(processor.getPackageClass()));
+        return writeArgumentPack(pack);
+    }
 
+
+    //----------------------PUBLIC_API----------------------------------
     /**
      * run processing
      * @param srcId processing SoundData id
@@ -71,10 +87,10 @@ public abstract class AbstractDataProvider implements DataProvider {
         args.setResultFile(src.getSourceFile().substring(0, src.getSourceFile().lastIndexOf('.'))+"operated.wav");
         args.setMagnitude(1.0f);
         SoundData res = operate(args);
-        return write(res, SoundData.class);
+        return writeSoundData(res);
     }
     /**
-     * create SoundData from .wav file and write into dataSource
+     * create persistent SoundData from .wav file
      * @param sourceFile .wav source file
      * @return FAILED if file contains format errors or couldn't be properly read, else SUCCESS + SoundData with external DataArray
      * @throws Exception
@@ -86,9 +102,27 @@ public abstract class AbstractDataProvider implements DataProvider {
         data.setId(nextSoundDataId());
         return write(data, SoundData.class);
     }
+    /**
+     * create transient SoundData with empty DataArray
+     * @param bitness count of bits in sample
+     * @param size buffer size in samples
+     * @param channels channel count
+     * @param destination file used to further storing DataArray
+     * @return new transient SoundData object with initialized empty DataArray
+     */
+    public ProviderResult<SoundData> createSoundData(SoundData.Bitness bitness, int size, int channels, String destination) {
+        SoundData data = new SoundData();
+        data.setBitness(bitness);
+        data.setChannels(channels);
+        data.setSourceFile(destination);
+        data.setData(DataArray.createEmpty(size, bitness.getBits(), channels));
+        if(data.getData()==null)
+            return new ProviderResult(Error.FAILED);
+        return new ProviderResult(data);
+    }
 
 
-    //----------------------SOUND_DATA------------------------------
+    //--------------------SOUND_DATA_CRUD-------------------------------
     /**
      * get free SoundData id
      * @return the least free id in dataSource, -1 if no free values available
@@ -123,7 +157,7 @@ public abstract class AbstractDataProvider implements DataProvider {
         return read(data, SoundData.class);
     }
     /**
-     * write transient SoundData into dataSource
+     * write SoundData into dataSource
      * @param data bean to write
      * @return SUCCESS if bean overwrited, BEAN_NOT_FOUND if writed new record, FAILED if error occurred
      * @throws Exception
@@ -148,7 +182,7 @@ public abstract class AbstractDataProvider implements DataProvider {
     }
 
 
-    //----------------------ARGUMENT_PACKS--------------------------
+    //-------------------ARGUMENT_PACKS_CRUD----------------------------
     /**
      * get free ArgumentPack id
      * @param tClass bean of ArgumentPack

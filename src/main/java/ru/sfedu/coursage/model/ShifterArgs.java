@@ -6,7 +6,9 @@ package ru.sfedu.coursage.model;
 public class ShifterArgs extends ArgumentPack {
     private float frequency = 0, step = 1;
     private int radius = 24;
-    public ShifterArgs() { }
+    public ShifterArgs() {
+        setProcessorId(ProcessorId.SHIFTER);
+    }
 
     public void setFrequency(float frequency) {
         this.frequency = frequency;

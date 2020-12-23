@@ -11,10 +11,22 @@ import com.opencsv.bean.CsvIgnore;
  */
 public class SoundData implements Serializable {
   public enum Bitness {
-      CHAR_8,
-      SHORT_16,
-      INT_24,
-      FLOAT
+      CHAR_8(8),
+      SHORT_16(16),
+      INT_24(24),
+      FLOAT(32);
+
+      private int bits, bytes;
+      Bitness(int bits) {
+          this.bits=bits;
+          bytes=bits/8;
+      }
+      public int getBits() {
+        return bits;
+      }
+      public int getBytes() {
+        return bytes;
+      }
   }
 
   @CsvBindByPosition(position = 0)
