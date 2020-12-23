@@ -1,44 +1,36 @@
 package ru.sfedu.coursage.processors;
 
 import ru.sfedu.coursage.model.SoundData;
-import ru.sfedu.coursage.model.ArgumentPack;
 
+/**
+ * abstract class of specific sound processing methods
+ */
 abstract public class SoundDataProcessor {
-  private long processorId;
-  
-  public SoundDataProcessor () { };
-  
-  
-  public void setProcessorId (long newVar) {
-    processorId = newVar;
-  }
-  public long getProcessorId () {
-    return processorId;
-  }
+    protected SoundData src, filter;
+    public SoundDataProcessor (SoundData src, SoundData filter) {
+        this.src=src;
+        this.filter=filter;
+    }
 
-  
-  public SoundData operate(SoundData src, SoundData filter, ArgumentPack args)
-  {
+    /**
+     * run processing
+     * @return new SoundData object with processed content
+     */
+    abstract public SoundData operate();
+
+    /**
+     * get value after "property="
+     * @param properties string with properties
+     * @param property string to find
+     * @return substring next to "property=" or null if property not found
+     */
+    protected static String getProperty(String properties, String property) {
+    int i=properties.indexOf(property);
+    if(i==-1)
       return null;
+    String temp = properties.substring(i+property.length()+1);
+    i=temp.indexOf(' ');
+    i=i==-1?temp.length():i;
+    return temp.substring(0, i);
   }
-
-
-  public static ArgumentPack parse(String properties)
-  {
-      return null;
-  }
-
-
-  protected SoundData operateWave(SoundData src, SoundData filter, ArgumentPack args)
-  {
-      return null;
-  }
-
-
-  protected SoundData operateSpectre(SoundData src, SoundData filter, ArgumentPack args)
-  {
-      return null;
-  }
-
-
 }

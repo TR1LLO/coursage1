@@ -1,7 +1,8 @@
 package ru.sfedu.coursage;
 
-import ru.sfedu.coursage.model.SoundData;
+import ru.sfedu.coursage.model.*;
 import ru.sfedu.coursage.model.dataProviders.CSVDataProvider;
+import ru.sfedu.coursage.model.dataProviders.AbstractDataProvider;
 import ru.sfedu.coursage.model.dataProviders.DataProvider;
 import org.junit.jupiter.api.*;
 
@@ -18,26 +19,44 @@ public class DataProviderTester {
         return obj;
     }
 
-
-    public static void soundDataTest(DataProvider provider) throws Exception {
+    public static void soundDataTest(AbstractDataProvider provider) throws Exception {
         for(int i=0; i<iterations; i++)
         {
             SoundData data1 = randomizeSoundData(new SoundData());
             data1.setId(i);
-            Assertions.assertEquals(DataProvider.DatabaseError.SUCCESS, provider.write(data1));
+            Assertions.assertEquals(DataProvider.Error.SUCCESS, provider.write(data1, SoundData.class).getError());
 
-            SoundData data2 = new SoundData();
-            data2.setId(data1.getId());
-            Assertions.assertEquals(DataProvider.DatabaseError.SUCCESS, provider.read(data2));
-            Assertions.assertEquals(data1, data2);
+            DataProvider.ProviderResult temp = provider.read(data1, SoundData.class);
+            Assertions.assertEquals(DataProvider.Error.SUCCESS, temp.getError());
+            Assertions.assertEquals(data1, temp.getObject());
 
-            Assertions.assertEquals(DataProvider.DatabaseError.SUCCESS, provider.remove(data1));
-            Assertions.assertEquals(DataProvider.DatabaseError.BEAN_NOT_FOUND, provider.read(data1));
+            Assertions.assertEquals(DataProvider.Error.SUCCESS, provider.remove(data1, SoundData.class).getError());
+            Assertions.assertEquals(DataProvider.Error.BEAN_NOT_FOUND, provider.read(data1, SoundData.class).getError());
         }
     }
+    public static void dataArrayTest(AbstractDataProvider provider) throws Exception {
+        SoundData s1=DataArray.readWavSoundData("C:\\Users\\Argon\\Desktop\\oof\\wav\\_eng.wav");
 
+        s1.setSourceFile("C:\\Users\\Argon\\Desktop\\oof\\wav\\_eng2.wav");
+        s1.getData().sampleRate/=2;
+        s1.getData().byteRate/=2;
+        DataArray.writeWavDataArray(s1);
+    }
+
+    public static void mainArgumentPackTest(AbstractDataProvider provider) throws Exception {
+        SoundData src = provider.createSoundData("C:/Users/Argon/Desktop/oof/wav/_eng2.wav").getObject();
+        String properties="id=64 "+
+                "result="+"C:/Users/Argon/Desktop/oof/wav/_eng3.wav"+" "+
+                "processor="+ArgumentPack.ProcessorId.EQUALIZER+" "+
+                "src="+src.getId()+" "+
+                "filter=-1 "+
+                "amps[3]=4";
+
+        MainProcessorArgs args = provider.createMainProcessorArgs(properties);
+        System.out.println(args);
+    }
     @Test
     public void main() throws Exception {
-        soundDataTest(new CSVDataProvider());
+        mainArgumentPackTest(new CSVDataProvider());
     }
 }

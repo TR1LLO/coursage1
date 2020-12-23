@@ -1,15 +1,15 @@
 package ru.sfedu.coursage.processors;
 
-import ru.sfedu.coursage.model.NormalizerArgs;
+import ru.sfedu.coursage.model.CompressorArgs;
 import ru.sfedu.coursage.model.SoundData;
 
 /**
- * class-implementer of sound normalization process
+ * class-implementer of oscillation compression process
  */
-public class Normalizer extends SoundDataProcessor {
-    NormalizerArgs args;
-    public Normalizer (SoundData data, NormalizerArgs args) {
-        super(data, null);
+public class Compressor extends SoundDataProcessor {
+    CompressorArgs args;
+    public Compressor(SoundData src, CompressorArgs args) {
+        super(src, null);
         this.args=args;
     }
 
@@ -23,7 +23,7 @@ public class Normalizer extends SoundDataProcessor {
      * @param properties string with all required properties
      * @return ArgumentPack with error code
      */
-    public static NormalizerArgs parse(String properties) {
-        return null;
-    }
+    public static CompressorArgs parse(String properties) {
+    return null;
+  }
 }

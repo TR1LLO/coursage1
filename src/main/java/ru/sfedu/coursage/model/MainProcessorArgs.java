@@ -1,50 +1,53 @@
 package ru.sfedu.coursage.model;
 
+/**
+ * MainProcessor-parameterizing package
+ */
 public class MainProcessorArgs extends ArgumentPack {
-  public static enum CompletionInstruction {
-      
-  }
-    
-  private SoundData src;
-  private SoundData filter;
-  private CompletionInstruction completionInstruction;
-  private ArgumentPack processorArgs;
+    private SoundData src;
+    private SoundData filter;
+    private ArgumentPack processorArgs;
+    private String resultFile;
   
-  public MainProcessorArgs () { };
+    public MainProcessorArgs () {
+    }
   
-  public void setSrc (SoundData newVar) {
+    public void setSrc (SoundData newVar) {
     src = newVar;
   }
-  public SoundData getSrc () {
+    public SoundData getSrc () {
     return src;
   }
 
-  public void setFilter (SoundData newVar) {
+    public void setFilter (SoundData newVar) {
     filter = newVar;
   }
-  public SoundData getFilter () {
+    public SoundData getFilter () {
     return filter;
   }
 
-  public void setCompletionInstruction (CompletionInstruction newVar) {
-    completionInstruction = newVar;
-  }
-  public CompletionInstruction getCompletionInstruction () {
-    return completionInstruction;
-  }
-
-  public void setProcessorArgs (ArgumentPack newVar) {
+    public void setProcessorArgs (ArgumentPack newVar) {
     processorArgs = newVar;
   }
-
-  public ArgumentPack getProcessorArgs () {
+    public ArgumentPack getProcessorArgs () {
     return processorArgs;
   }
 
-  public static MainProcessorArgs parse(String properties)
-  {
-      return null;
+    public void setResultFile(String resultFile) {
+        this.resultFile = resultFile;
+    }
+    public String getResultFile() {
+        return resultFile;
+    }
+
+    @Override
+    public String toString() {
+      return "MPArgs ["+
+              "src="+src.getId()+", "+
+              "filter="+(filter==null?"null":filter.getId())+", "+
+              "result="+resultFile+", "+
+              "error="+getErrorCode()+", "+
+              "warn="+getWarnCode()+", " +
+              processorArgs.toString()+"]<-"+super.toString();
   }
-
-
 }

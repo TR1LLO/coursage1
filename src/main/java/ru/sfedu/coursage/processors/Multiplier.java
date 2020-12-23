@@ -1,15 +1,15 @@
 package ru.sfedu.coursage.processors;
 
-import ru.sfedu.coursage.model.NormalizerArgs;
+import ru.sfedu.coursage.model.MultiplierArgs;
 import ru.sfedu.coursage.model.SoundData;
 
 /**
- * class-implementer of sound normalization process
+ * class-implementer of multiplication process
  */
-public class Normalizer extends SoundDataProcessor {
-    NormalizerArgs args;
-    public Normalizer (SoundData data, NormalizerArgs args) {
-        super(data, null);
+public class Multiplier extends SoundDataProcessor {
+    MultiplierArgs args;
+    public Multiplier(SoundData src, SoundData filter, MultiplierArgs args) {
+        super(src, filter);
         this.args=args;
     }
 
@@ -23,7 +23,7 @@ public class Normalizer extends SoundDataProcessor {
      * @param properties string with all required properties
      * @return ArgumentPack with error code
      */
-    public static NormalizerArgs parse(String properties) {
+    public static MultiplierArgs parse(String properties) {
         return null;
     }
 }
