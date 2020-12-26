@@ -1,5 +1,6 @@
 package ru.sfedu.coursage.model.dataProviders;
 import com.sun.istack.internal.NotNull;
+import com.sun.org.apache.xpath.internal.Arg;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.sfedu.coursage.model.*;
@@ -27,33 +28,6 @@ public abstract class AbstractDataProvider implements DataProvider {
         return processor.operate();
     }
     /**
-     * create transient MainProcessorArgs from string
-     * @param properties string with properties to parse (format property=value)
-     * @return MainProcessorArgs with errorCode PARSING_FAILED if missed property or found incompatible type, NO_SUCH_PROCESSOR if couldn't identify processor type
-     * @throws Exception
-     */
-    public MainProcessorArgs createMainProcessorArgs(@NotNull String properties) throws Exception {
-        logger.debug("MainProcessorArgs creating...");
-        return MainProcessor.parse(properties, this);
-    }
-    /**
-     * create persistent ArgumentPack from string
-     * @param processor target processor identifier
-     * @param properties string to parse
-     * @return SUCCEED + ArgumentPack if pack parsed and writed successfully, FAILED if parsing or writing failed
-     * @throws Exception
-     */
-    public ProviderResult<ArgumentPack> createArgumentPack(@NotNull ArgumentPack.ProcessorId processor, @NotNull String properties) throws Exception {
-        logger.debug("ArgumentPack creating...");
-        ArgumentPack pack = MainProcessor.createArgumentPack(processor, properties);
-        if(pack.getErrorCode()!= ArgumentPack.ErrorCode.INDEFINITE) {
-            logger.error("ArgumentPack parsing failed");
-            return new ProviderResult(Error.FAILED);
-        }
-        pack.setId(nextArgumentPackId(processor.getPackageClass()));
-        return writeArgumentPack(pack);
-    }
-    /**
      * create empty persistent SoundData clone
      * @param orig original object
      * @return SUCCESS + SoundData if cloned and writed successfully, else FAILED
@@ -61,6 +35,8 @@ public abstract class AbstractDataProvider implements DataProvider {
      */
     public ProviderResult<SoundData> createSoundDataEmptyClone(@NotNull SoundData orig) throws Exception {
         logger.debug("SoundData empty cloning...");
+        if(orig.getData()==null)
+            return new ProviderResult(Error.EMPTY_SOURCE);
         ProviderResult<SoundData> result= createEmptySoundData(
                 orig.getData().getBits(),
                 orig.getData().getSize(),
@@ -74,7 +50,6 @@ public abstract class AbstractDataProvider implements DataProvider {
         result.getObject().setId(nextSoundDataId());
         return writeSoundData(result.getObject());
     }
-
 
     //----------------------PUBLIC_API----------------------------------
     /**
@@ -173,6 +148,31 @@ public abstract class AbstractDataProvider implements DataProvider {
         return extWriteSoundData(data);
     }
     /**
+     * create transient SoundData from parameters
+     * @param bits count of bits in samples
+     * @param channels count of channels
+     * @param sampleRate sample rate
+     * @param src source file
+     * @return SUCCESS + SoundData if succeed, FAILED if DataArray initialization failed
+     * @throws Exception
+     */
+    public ProviderResult<SoundData> createSoundData(long id, int bits, int channels, int sampleRate, @NotNull String src) throws Exception {
+        logger.debug("SoundData creating...");
+        SoundData data = new SoundData();
+        data.setId(id);
+        data.setBitness(SoundData.Bitness.valueOf(bits));
+        data.setChannels(channels);
+        data.setSourceFile(src);
+        data.setSampleRate(sampleRate);
+        data.setData(DataArray.readWavDataArray(data));
+        if(data.getData()==null) {
+            logger.error("DataArray init failed");
+            return new ProviderResult(Error.FAILED);
+        }
+        logger.info("SoundData created");
+        return new ProviderResult(data);
+    }
+    /**
      * create transient SoundData with empty DataArray
      * @param bits count of bits per sample
      * @param size buffer size in samples
@@ -197,30 +197,70 @@ public abstract class AbstractDataProvider implements DataProvider {
     }
 
 
-    public ProviderResult<ArgumentPack> createCompressorArgs() {
-        return null;
+    public ProviderResult<ArgumentPack> createCompressorArgs(float power, boolean distortion) throws Exception {
+        logger.debug("CompressorArgs creating...");
+        CompressorArgs args=new CompressorArgs();
+        args.setPower(power);
+        args.setDistortion(distortion);
+
+        args.setId(nextArgumentPackId(args.getProcessorId()));
+        return writeArgumentPack(args);
     }
-    public ProviderResult<ArgumentPack> createConverterArgs() {
-        return null;
+    public ProviderResult<ArgumentPack> createConverterArgs(SoundData.Bitness bitness, int channels, int sampleRate) throws Exception {
+        logger.debug("ConverterArgs creating...");
+        ConverterArgs args=new ConverterArgs();
+        args.setBitness(bitness);
+        args.setChannels(channels);
+        args.setSampleRate(sampleRate);
+
+        args.setId(nextArgumentPackId(args.getProcessorId()));
+        return writeArgumentPack(args);
     }
     public ProviderResult<ArgumentPack> createEqualizerArgs(float[] amplitudes) throws Exception {
         logger.debug("EqualizerArgs creating...");
         EqualizerArgs args=new EqualizerArgs();
         args.setAmps(amplitudes);
-        args.setId(nextArgumentPackId(args.getProcessorId().getPackageClass()));
+
+        args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
     }
-    public ProviderResult<ArgumentPack> createMixerArgs() {
-        return null;
+    public ProviderResult<ArgumentPack> createMixerArgs(boolean channelMixing, boolean cover) throws Exception {
+        logger.debug("MixerArgs creating...");
+        MixerArgs args=new MixerArgs();
+        args.setChannelMixing(channelMixing);
+        args.setCover(cover);
+
+        args.setId(nextArgumentPackId(args.getProcessorId()));
+        return writeArgumentPack(args);
     }
-    public ProviderResult<ArgumentPack> createMultiplierArgs() {
-        return null;
+    public ProviderResult<ArgumentPack> createMultiplierArgs(boolean average, int count) throws Exception {
+        logger.debug("MixerArgs creating...");
+        MultiplierArgs args=new MultiplierArgs();
+        args.setAverage(average);
+        args.setCount(count);
+
+        args.setId(nextArgumentPackId(args.getProcessorId()));
+        return writeArgumentPack(args);
     }
-    public ProviderResult<ArgumentPack> createNormalizerArgs() {
-        return null;
+    public ProviderResult<ArgumentPack> createNormalizerArgs(float amp, boolean hard, int period) throws Exception {
+        logger.debug("MixerArgs creating...");
+        NormalizerArgs args=new NormalizerArgs();
+        args.setAmp(amp);
+        args.setHard(hard);
+        args.setPeriod(period);
+
+        args.setId(nextArgumentPackId(args.getProcessorId()));
+        return writeArgumentPack(args);
     }
-    public ProviderResult<ArgumentPack> createShifterArgs() {
-        return null;
+    public ProviderResult<ArgumentPack> createShifterArgs(float frequency, float step, int radius) throws Exception {
+        logger.debug("MixerArgs creating...");
+        ShifterArgs args=new ShifterArgs();
+        args.setFrequency(frequency);
+        args.setStep(step);
+        args.setRadius(radius);
+
+        args.setId(nextArgumentPackId(args.getProcessorId()));
+        return writeArgumentPack(args);
     }
 
 
@@ -307,21 +347,20 @@ public abstract class AbstractDataProvider implements DataProvider {
     //-------------------ARGUMENT_PACKS_CRUD----------------------------
     /**
      * get free ArgumentPack id
-     * @param tClass bean of ArgumentPack
-     * @param <T>
+     * @param processorId identifier of ArgumentPack class
      * @return the least free id in dataSource, -1 if no free values available
      * @throws Exception
      */
-    public <T extends ArgumentPack>long nextArgumentPackId(Class tClass) throws Exception {
-        TreeSet<T> set = new TreeSet<>(new Comparator<T>() {
+    public long nextArgumentPackId(ArgumentPack.ProcessorId processorId) throws Exception {
+        TreeSet<ArgumentPack> set = new TreeSet<>(new Comparator<ArgumentPack>() {
             @Override
-            public int compare(T o1, T o2) {
+            public int compare(ArgumentPack o1, ArgumentPack o2) {
                 return (int)(o1.getId()-o2.getId());
             }
         });
-        readAllArgumentPacks(set, tClass);
+        readAllArgumentPacks(set, processorId);
 
-        Iterator<T> iterator = set.iterator();
+        Iterator<ArgumentPack> iterator = set.iterator();
         for(long i=0; i<set.size()+1; i++)
             if(!iterator.hasNext())
                 return i;
@@ -341,7 +380,7 @@ public abstract class AbstractDataProvider implements DataProvider {
         logger.debug("ArgumentPack reading...");
         ArgumentPack pack = processor.newPackage();
         pack.setId(id);
-        return extReadArgumentPack(pack, processor.getPackageClass());
+        return extReadArgumentPack(pack, processor);
     }
     /**
      * write ArgumentPack into dataSource
@@ -351,7 +390,7 @@ public abstract class AbstractDataProvider implements DataProvider {
      */
     public ProviderResult<ArgumentPack> writeArgumentPack(@NotNull ArgumentPack pack) throws Exception {
         logger.debug("ArgumentPack writing...");
-        return extWriteArgumentPack(pack, pack.getProcessorId().getPackageClass());
+        return extWriteArgumentPack(pack, pack.getProcessorId());
     }
     /**
      * remove ArgumentPack by ids
@@ -364,6 +403,6 @@ public abstract class AbstractDataProvider implements DataProvider {
         logger.debug("ArgumentPack removing...");
         ArgumentPack pack = processor.newPackage();
         pack.setId(id);
-        return extRemoveArgumentPack(pack, processor.getPackageClass());
+        return extRemoveArgumentPack(pack, processor);
     }
 }

@@ -17,13 +17,4 @@ public class Multiplier extends SoundDataProcessor {
     public SoundData operate() {
         return null;
     }
-
-    /**
-     * parse string properties into ArgumentPack
-     * @param properties string with all required properties
-     * @return ArgumentPack with error code
-     */
-    public static MultiplierArgs parse(String properties) {
-        return null;
-    }
 }

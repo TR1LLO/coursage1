@@ -34,7 +34,7 @@ public interface DataProvider {
             this(error, null);
         }
         ProviderResult(T object){
-            this(Error.SUCCESS, object);
+            this(object==null?Error.FAILED:Error.SUCCESS, object);
         }
 
         public T getObject() {
@@ -55,23 +55,21 @@ public interface DataProvider {
     /**
      * read all beans from dataSource
      * @param container collection object to store reading beans
-     * @param tClass class to write
-     * @param <T>
+     * @param processorId class identifier to write
      * @return SUCCESS if read >0 beans, EMPTY_SOURCE if file doesn't contain required beans, FAILED if related data source doesn't exist
      * @throws Exception
      */
-    <T extends ArgumentPack>ProviderResult<Collection<T>> readAllArgumentPacks(@NotNull Collection<T> container,
-                                                                               @NotNull Class<T> tClass) throws Exception;
+    ProviderResult<Collection<ArgumentPack>> readAllArgumentPacks(@NotNull Collection<ArgumentPack> container,
+                                                                  @NotNull ArgumentPack.ProcessorId processorId) throws Exception;
     /**
      * write bean collection into dataSource
      * @param container collection object to write from
-     * @param tClass class to write
-     * @param <T>
+     * @param processorId class identifier to write
      * @return SUCCESS if wrote >0 beans, EMPTY_SOURCE if collection is empty, else FAILED
      * @throws Exception
      */
-    <T extends ArgumentPack>ProviderResult<Collection<T>> writeAllArgumentPacks(@NotNull Collection<T> container,
-                                                                                @NotNull Class<T> tClass) throws Exception;
+    ProviderResult<Collection<ArgumentPack>> writeAllArgumentPacks(@NotNull Collection<ArgumentPack> container,
+                                                                   @NotNull ArgumentPack.ProcessorId processorId) throws Exception;
 
     /**
      * read all beans from dataSource
@@ -94,7 +92,7 @@ public interface DataProvider {
     ProviderResult<SoundData> extRemoveSoundData(@NotNull SoundData obj) throws Exception;
 
 
-    ProviderResult<ArgumentPack> extReadArgumentPack(@NotNull ArgumentPack obj, Class tClass) throws Exception;
-    ProviderResult<ArgumentPack> extWriteArgumentPack(@NotNull ArgumentPack obj, Class tClass) throws Exception;
-    ProviderResult<ArgumentPack> extRemoveArgumentPack(@NotNull ArgumentPack obj, Class tClass) throws Exception;
+    ProviderResult<ArgumentPack> extReadArgumentPack(@NotNull ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception;
+    ProviderResult<ArgumentPack> extWriteArgumentPack(@NotNull ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception;
+    ProviderResult<ArgumentPack> extRemoveArgumentPack(@NotNull ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception;
 }

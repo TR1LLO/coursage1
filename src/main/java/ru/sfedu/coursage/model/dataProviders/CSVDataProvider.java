@@ -91,18 +91,18 @@ public class CSVDataProvider extends AbstractDataProvider {
         readAll(list, bean);
 
         if(!list.remove(obj))
-            return new ProviderResult(DataProvider.Error.BEAN_NOT_FOUND);
+            return new ProviderResult(obj);
         writeAll(list, obj.getClass());
         logger.warn("bean removed");
         return new ProviderResult(obj);
     }
 
     //-----------------------------------------INTERFACE-------------------------------------------
-    public <T extends ArgumentPack> ProviderResult<Collection<T>> readAllArgumentPacks(Collection<T> container, Class<T> tClass) throws Exception {
-        return readAll(container, tClass);
+    public ProviderResult<Collection<ArgumentPack>> readAllArgumentPacks(Collection<ArgumentPack> container, ArgumentPack.ProcessorId processorId) throws Exception {
+        return readAll(container, processorId.getPackageClass());
     }
-    public <T extends ArgumentPack> ProviderResult<Collection<T>> writeAllArgumentPacks(Collection<T> container, Class<T> tClass) throws Exception {
-        return writeAll(container, tClass);
+    public ProviderResult<Collection<ArgumentPack>> writeAllArgumentPacks(Collection<ArgumentPack> container, ArgumentPack.ProcessorId processorId) throws Exception {
+        return writeAll(container, processorId.getPackageClass());
     }
 
     public ProviderResult<Collection<SoundData>> readAllSoundData(Collection<SoundData> container) throws Exception {
@@ -122,13 +122,13 @@ public class CSVDataProvider extends AbstractDataProvider {
         return remove(obj, SoundData.class);
     }
 
-    public ProviderResult<ArgumentPack> extReadArgumentPack(ArgumentPack obj, Class tClass) throws Exception {
-        return read(obj, tClass);
+    public ProviderResult<ArgumentPack> extReadArgumentPack(ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception {
+        return read(obj, processorId.getPackageClass());
     }
-    public ProviderResult<ArgumentPack> extWriteArgumentPack(ArgumentPack obj, Class tClass) throws Exception {
-        return write(obj, tClass);
+    public ProviderResult<ArgumentPack> extWriteArgumentPack(ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception {
+        return write(obj, processorId.getPackageClass());
     }
-    public ProviderResult<ArgumentPack> extRemoveArgumentPack(ArgumentPack obj, Class tClass) throws Exception {
-        return remove(obj, tClass);
+    public ProviderResult<ArgumentPack> extRemoveArgumentPack(ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception {
+        return remove(obj, processorId.getPackageClass());
     }
 }

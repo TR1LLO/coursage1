@@ -58,29 +58,4 @@ public class Equalizer extends SoundDataProcessor {
         logger.info("Equalizer operating finished");
         return dst;
     }
-
-    public static Logger logger = LogManager.getLogger();
-    private static final String AMPLITUDE_PROPERTY="amps";
-    /**
-     * parse string properties into ArgumentPack
-     * @param properties string with all required properties
-     * @return ArgumentPack with error code
-     */
-    public static EqualizerArgs parse(String properties) {
-        logger.info("EqualizerArgs parsing...");
-        String temp;
-        EqualizerArgs res=new EqualizerArgs();
-
-        float[] amps=new float[res.getCount()];
-        for(int i=0; i< res.getCount(); i++)
-        {
-            temp=getProperty(properties, AMPLITUDE_PROPERTY+"["+i+"]");
-            if(temp!=null)
-                amps[i]=Float.valueOf(temp);
-            logger.debug("EqualizerArgs parsing: amps parsed");
-        }
-        res.setAmps(amps);
-        logger.info("EqualizerArgs parsed");
-        return res;
-    }
 }

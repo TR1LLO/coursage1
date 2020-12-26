@@ -37,11 +37,11 @@ public abstract class DataProviderTester {
         Assert.assertEquals(DataProvider.Error.SUCCESS, result.getError());
 
         result=provider.removeSoundData(src.getId());
-        Assert.assertEquals(DataProvider.Error.BEAN_NOT_FOUND, result.getError());
+        Assert.assertEquals(DataProvider.Error.SUCCESS, result.getError());
         result=provider.removeSoundData(res.getId());
-        Assert.assertEquals(DataProvider.Error.BEAN_NOT_FOUND, result.getError());
+        Assert.assertEquals(DataProvider.Error.SUCCESS, result.getError());
         result=provider.removeArgumentPack(eq.getId(), eq.getProcessorId());
-        Assert.assertEquals(DataProvider.Error.BEAN_NOT_FOUND, result.getError());
+        Assert.assertEquals(DataProvider.Error.SUCCESS, result.getError());
 
         result=provider.operate(-1, -1, -1, -1, eq.getProcessorId());
         Assert.assertEquals(DataProvider.Error.BEAN_NOT_FOUND, result.getError());
