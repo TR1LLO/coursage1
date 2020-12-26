@@ -2,6 +2,10 @@ package ru.sfedu.coursage.model;
 
 
 import com.opencsv.bean.CsvBindByPosition;
+import org.simpleframework.xml.Default;
+import org.simpleframework.xml.DefaultType;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.Root;
 import ru.sfedu.coursage.processors.*;
 
 import java.util.Objects;
@@ -9,6 +13,8 @@ import java.util.Objects;
 /**
  * abstract bean-package of parameters related to specific SoundProcessor
  */
+@Root
+@Default(DefaultType.FIELD)
 abstract public class ArgumentPack {
     /**
      * significant bean states
@@ -72,11 +78,11 @@ abstract public class ArgumentPack {
     @CsvBindByPosition(position = 2)
     private boolean completed;
     @CsvBindByPosition(position = 3)
+    @Element(required = false)
     private ErrorCode errorCode;
     @CsvBindByPosition(position = 4)
+    @Element(required = false)
     private WarnCode warnCode;
-    @CsvBindByPosition(position = 5)
-    private float magnitude;
     public ArgumentPack () {
   }
 
@@ -113,13 +119,6 @@ abstract public class ArgumentPack {
     }
     public WarnCode getWarnCode () {
       return warnCode;
-    }
-
-    public void setMagnitude(float magnitude) {
-        this.magnitude = magnitude;
-    }
-    public float getMagnitude() {
-        return magnitude;
     }
 
     @Override

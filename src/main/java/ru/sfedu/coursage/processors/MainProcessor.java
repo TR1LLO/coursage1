@@ -1,12 +1,16 @@
 package ru.sfedu.coursage.processors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.sfedu.coursage.model.*;
 import ru.sfedu.coursage.model.ArgumentPack.ErrorCode;
 import ru.sfedu.coursage.model.dataProviders.AbstractDataProvider;
+import sun.applet.Main;
 
 /**
  * generalizing class-dispatcher of SoundProcessors and their methods
  */
 public class MainProcessor {
+    public static Logger logger = LogManager.getLogger();
     MainProcessorArgs args;
     public MainProcessor (MainProcessorArgs args) {
         this.args=args;
@@ -17,19 +21,24 @@ public class MainProcessor {
      * @return SoundData with processed content
      */
     public SoundData operate() {
+        logger.debug("processor dispatching...");
         ArgumentPack pack = args.getProcessorArgs();
         SoundDataProcessor processor;
         switch (pack.getProcessorId()) {
-            case CONVERTER:     processor=new Converter(args.getSrc(), (ConverterArgs)pack);  break;
-            case SHIFTER:       processor=new Shifter(args.getSrc(),   (ShifterArgs)pack);    break;
-            case NORMALIZER:    processor=new Normalizer(args.getSrc(),(NormalizerArgs)pack); break;
-            case EQUALIZER:     processor=new Equalizer(args.getSrc(), (EqualizerArgs)pack);  break;
-            case COMPRESSOR:    processor=new Compressor(args.getSrc(),(CompressorArgs)pack); break;
-            case MIXER:         processor=new Mixer(args.getSrc(), args.getFilter(), (MixerArgs)pack);           break;
-            case MULTIPLIER:    processor=new Multiplier(args.getSrc(), args.getFilter(), (MultiplierArgs)pack); break;
-            default: return null;
+            case CONVERTER:     processor=new Converter(    args.getSrc(), args.getDst(), (ConverterArgs)pack);  break;
+            case SHIFTER:       processor=new Shifter(      args.getSrc(), args.getDst(), (ShifterArgs)pack);    break;
+            case NORMALIZER:    processor=new Normalizer(   args.getSrc(), args.getDst(), (NormalizerArgs)pack); break;
+            case EQUALIZER:     processor=new Equalizer(    args.getSrc(), args.getDst(), (EqualizerArgs)pack);  break;
+            case COMPRESSOR:    processor=new Compressor(   args.getSrc(), args.getDst(), (CompressorArgs)pack); break;
+            case MIXER:         processor=new Mixer(        args.getSrc(), args.getFilter(), args.getDst(), (MixerArgs)pack);      break;
+            case MULTIPLIER:    processor=new Multiplier(   args.getSrc(), args.getFilter(), args.getDst(), (MultiplierArgs)pack); break;
+            default:
+                logger.error("target processorId undefined");
+                return null;
         }
-        return processor.operate();
+        SoundData res = processor.operate();
+        res.getData().hash=res.getData().bufferHash();
+        return res;
     }
 
     //---------------------------PARSING-------------------------------
@@ -40,6 +49,7 @@ public class MainProcessor {
      * @return ArgumentPack with errorCode
      */
     public static ArgumentPack createArgumentPack(ArgumentPack.ProcessorId processorId, String properties) {
+        logger.debug("parser dispatching...");
         switch (processorId) {
             case EQUALIZER:     return Equalizer.parse(properties);
             case MIXER:         return Mixer.parse(properties);
@@ -48,15 +58,17 @@ public class MainProcessor {
             case COMPRESSOR:    return Compressor.parse(properties);
             case SHIFTER:       return Shifter.parse(properties);
             case CONVERTER:     return Converter.parse(properties);
-            default:            return null;
+            default:
+                logger.error("target processorId undefined");
+                return null;
         }
     }
 
     private final static String SRC_PROPERTY = "src";
+    private final static String DST_PROPERTY = "dst";
     private final static String FILTER_PROPERTY = "filter";
-    private final static String RESULT_PROPERTY = "result";
+    private final static String PACK_ID_PROPERTY = "id";
     private final static String PROCESSOR_PROPERTY = "processor";
-    private final static String MAGNITUDE_PROPERTY = "magn";
 
     /**
      * parse string into MainProcessorArgs with related transient beans
@@ -66,10 +78,13 @@ public class MainProcessor {
      * @throws Exception
      */
     public static MainProcessorArgs parse(String properties, AbstractDataProvider provider) throws Exception {
+        logger.debug("MainProcessorArgs parsing...");
         String temp;
         MainProcessorArgs args = new MainProcessorArgs();
         args.setErrorCode(ErrorCode.SUCCESS);
 
+        logger.debug("src init");
+        //---------------------src_init----------------------
         temp=SoundDataProcessor.getProperty(properties, SRC_PROPERTY);
         if(temp!=null) {
             SoundData data = provider.readSoundData(Long.valueOf(temp)).getObject();
@@ -77,10 +92,33 @@ public class MainProcessor {
                 DataArray.readWavDataArray(data);
                 args.setSrc(data);
             }
+            else logger.error("src bean not found");
         }
-        if(args.getSrc()==null)
+        else logger.error("src property missing");
+        if(args.getSrc()==null) {
+            logger.error("src init failed");
             args.setErrorCode(ErrorCode.PARSING_FAILED);
+        }
 
+        logger.debug("dst init");
+        //---------------------dst_init----------------------
+        temp=SoundDataProcessor.getProperty(properties, DST_PROPERTY);
+        if(temp!=null) {
+            SoundData data = provider.readSoundData(Long.valueOf(temp)).getObject();
+            if(data!=null) {
+                DataArray.readWavDataArray(data);
+                args.setDst(data);
+            }
+            else logger.error("dst bean not found");
+        }
+        else logger.error("dst property missing");
+        if(args.getDst()==null) {
+            logger.error("dst init failed");
+            args.setErrorCode(ErrorCode.PARSING_FAILED);
+        }
+
+        logger.debug("filter init");
+        //---------------------filter_init----------------------
         temp=SoundDataProcessor.getProperty(properties, FILTER_PROPERTY);
         if(temp!=null) {
             SoundData data = provider.readSoundData(Long.valueOf(temp)).getObject();
@@ -89,21 +127,32 @@ public class MainProcessor {
                 DataArray.readWavDataArray(data);
                 args.setSrc(data);
             }
+            else logger.error("filter bean not found");
         }
+        else logger.warn("filter property missing");
 
+        logger.debug("identifiers init");
+        //------------------identifiers_init----------------------
         temp=SoundDataProcessor.getProperty(properties, PROCESSOR_PROPERTY);
         if(temp!=null) {
-            args.setProcessorId(ArgumentPack.ProcessorId.valueOf(temp));
-            args.setProcessorArgs(createArgumentPack(args.getProcessorId(), properties));
+            ArgumentPack.ProcessorId processor = ArgumentPack.ProcessorId.valueOf(temp);
+            args.setProcessorId(processor);
+            ArgumentPack pack = createArgumentPack(args.getProcessorId(), properties);
+
+            temp=SoundDataProcessor.getProperty(properties, PACK_ID_PROPERTY);
+            if(temp!=null) {
+                logger.warn("pack id found");
+                pack.setId(Long.valueOf(temp));
+                provider.read(pack, processor.getPackageClass());
+            }
+            args.setProcessorArgs(pack);
         }
-        else args.setErrorCode(ErrorCode.NO_SUCH_PROCESSOR);
+        else {
+            logger.error("processor property missing");
+            args.setErrorCode(ErrorCode.NO_SUCH_PROCESSOR);
+        }
 
-        temp=SoundDataProcessor.getProperty(properties, MAGNITUDE_PROPERTY);
-        if(temp!=null)
-            args.setMagnitude(Float.valueOf(temp));
-
-        temp=SoundDataProcessor.getProperty(properties, RESULT_PROPERTY);
-        args.setResultFile(temp==null?"null":temp);
+        logger.debug("MainProcessorArgs parsed");
         return args;
     }
 }

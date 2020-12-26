@@ -8,8 +8,8 @@ import ru.sfedu.coursage.model.SoundData;
  */
 public class Multiplier extends SoundDataProcessor {
     MultiplierArgs args;
-    public Multiplier(SoundData src, SoundData filter, MultiplierArgs args) {
-        super(src, filter);
+    public Multiplier(SoundData src, SoundData filter, SoundData dst, MultiplierArgs args) {
+        super(src, filter, dst);
         this.args=args;
     }
 

@@ -8,8 +8,8 @@ import ru.sfedu.coursage.model.SoundData;
  */
 public class Compressor extends SoundDataProcessor {
     CompressorArgs args;
-    public Compressor(SoundData src, CompressorArgs args) {
-        super(src, null);
+    public Compressor(SoundData src, SoundData dst, CompressorArgs args) {
+        super(src, null, dst);
         this.args=args;
     }
 

@@ -8,8 +8,8 @@ import ru.sfedu.coursage.model.SoundData;
  */
 public class Mixer extends SoundDataProcessor {
     MixerArgs args;
-    public Mixer (SoundData src, SoundData filter, MixerArgs args) {
-        super(src, filter);
+    public Mixer (SoundData src, SoundData filter, SoundData dst, MixerArgs args) {
+        super(src, filter, dst);
         this.args=args;
     }
 

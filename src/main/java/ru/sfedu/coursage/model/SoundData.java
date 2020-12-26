@@ -5,10 +5,16 @@ import java.util.Objects;
 
 import com.opencsv.bean.CsvBindByPosition;
 import com.opencsv.bean.CsvIgnore;
+import org.simpleframework.xml.Default;
+import org.simpleframework.xml.DefaultType;
+import org.simpleframework.xml.Root;
+import org.simpleframework.xml.Transient;
 
 /**
  * bean-handler of sound data
  */
+@Root
+@Default(DefaultType.FIELD)
 public class SoundData implements Serializable {
   public enum Bitness {
       CHAR_8(8),
@@ -27,6 +33,14 @@ public class SoundData implements Serializable {
       public int getBytes() {
         return bytes;
       }
+      public static Bitness valueOf(int bits) {
+          switch (bits) {
+              case 8: return CHAR_8;
+              case 16: return SHORT_16;
+              case 24: return INT_24;
+              default: return FLOAT;
+          }
+      }
   }
 
   @CsvBindByPosition(position = 0)
@@ -39,7 +53,9 @@ public class SoundData implements Serializable {
   private int sampleRate;
   @CsvBindByPosition(position = 4)
   private String sourceFile;
+
   @CsvIgnore
+  @Transient
   private DataArray data;
   
   
@@ -102,7 +118,7 @@ public class SoundData implements Serializable {
               + ", ch=" + channels
               + ", sr=" + sampleRate
               + ", sf=" + sourceFile
-              + "]";
+              + ", data="+data.toString()+"]";
   }
   @Override
   public boolean equals(Object o) {

@@ -8,8 +8,8 @@ import ru.sfedu.coursage.model.SoundData;
  */
 public class Converter extends SoundDataProcessor {
     ConverterArgs args;
-    public Converter (SoundData src, ConverterArgs args) {
-        super(src, null);
+    public Converter (SoundData src, SoundData dst, ConverterArgs args) {
+        super(src, null, dst);
         this.args=args;
     }
 

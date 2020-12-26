@@ -1,6 +1,10 @@
 package ru.sfedu.coursage.model.dataProviders;
 
 import com.sun.istack.internal.NotNull;
+import com.sun.org.apache.xpath.internal.Arg;
+import ru.sfedu.coursage.model.ArgumentPack;
+import ru.sfedu.coursage.model.SoundData;
+
 import java.util.Collection;
 
 /**
@@ -39,53 +43,58 @@ public interface DataProvider {
         public Error getError() {
             return error;
         }
+
+        @Override
+        public String toString() {
+            return "ProviderResult [" +
+                    "error=" + error +
+                    ", object=" + object + ']';
+        }
     }
 
     /**
      * read all beans from dataSource
      * @param container collection object to store reading beans
-     * @param bean class to read
+     * @param tClass class to write
      * @param <T>
      * @return SUCCESS if read >0 beans, EMPTY_SOURCE if file doesn't contain required beans, FAILED if related data source doesn't exist
      * @throws Exception
      */
-    <T>ProviderResult<Collection<T>> readAll(@NotNull Collection<T> container,
-                                             @NotNull Class bean) throws Exception;
+    <T extends ArgumentPack>ProviderResult<Collection<T>> readAllArgumentPacks(@NotNull Collection<T> container,
+                                                                               @NotNull Class<T> tClass) throws Exception;
     /**
      * write bean collection into dataSource
      * @param container collection object to write from
-     * @param bean class to write
+     * @param tClass class to write
      * @param <T>
      * @return SUCCESS if wrote >0 beans, EMPTY_SOURCE if collection is empty, else FAILED
      * @throws Exception
      */
-    <T>ProviderResult<Collection<T>> writeAll(@NotNull Collection<T> container,
-                                              @NotNull Class bean) throws Exception;
+    <T extends ArgumentPack>ProviderResult<Collection<T>> writeAllArgumentPacks(@NotNull Collection<T> container,
+                                                                                @NotNull Class<T> tClass) throws Exception;
+
     /**
-     * fill bean object with related data from dataSource
-     * @param obj bean object used to compare by equals method with file containing to extract its fields
-     * @param <T> extends CopyingInterface for field copying
-     * @return SUCCESS if object successfully extracted, EMPTY_SOURCE if file doesn't contain required beans, BEAN_NOT_FOUND if file doesn't contain equal to obj bean, FAILED if related data source doesn't exist
+     * read all beans from dataSource
+     * @param container collection object to store reading beans
+     * @return SUCCESS if read >0 beans, EMPTY_SOURCE if file doesn't contain required beans, FAILED if related data source doesn't exist
      * @throws Exception
      */
-    <T>ProviderResult<T> read(@NotNull T obj,
-                              @NotNull Class bean) throws Exception;
+    ProviderResult<Collection<SoundData>> readAllSoundData(@NotNull Collection<SoundData> container) throws Exception;
     /**
-     * write bean into dataSource or overwrite if equal already exist
-     * @param obj bean to write/overwrite
-     * @param <T>
-     * @return SUCCESS if bean was found in file and overwrited, BEAN_NOT_FOUND if bean wasn't found but was successfully writed, else FAILED
+     * write bean collection into dataSource
+     * @param container collection object to write from
+     * @return SUCCESS if wrote >0 beans, EMPTY_SOURCE if collection is empty, else FAILED
      * @throws Exception
      */
-    <T>ProviderResult<T> write(@NotNull T obj,
-                               @NotNull Class bean) throws Exception;
-    /**
-     * remove bean from dataSource
-     * @param obj object to remove, compares with file content by equals method
-     * @param <T>
-     * @return SUCCESS if bean was successfully removed, BEAN_NOT_FOUND if file doesn't contain equal bean, EMPTY_SOURCE if file doesn't contain required beans, FAILED if related data source doesn't exist
-     * @throws Exception
-     */
-    <T>ProviderResult<T> remove(@NotNull T obj,
-                                @NotNull Class bean) throws Exception;
+    ProviderResult<Collection<SoundData>> writeAllSoundData(@NotNull Collection<SoundData> container) throws Exception;
+
+
+    ProviderResult<SoundData> extReadSoundData(@NotNull SoundData obj) throws Exception;
+    ProviderResult<SoundData> extWriteSoundData(@NotNull SoundData obj) throws Exception;
+    ProviderResult<SoundData> extRemoveSoundData(@NotNull SoundData obj) throws Exception;
+
+
+    ProviderResult<ArgumentPack> extReadArgumentPack(@NotNull ArgumentPack obj, Class tClass) throws Exception;
+    ProviderResult<ArgumentPack> extWriteArgumentPack(@NotNull ArgumentPack obj, Class tClass) throws Exception;
+    ProviderResult<ArgumentPack> extRemoveArgumentPack(@NotNull ArgumentPack obj, Class tClass) throws Exception;
 }

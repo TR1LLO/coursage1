@@ -4,10 +4,8 @@ package ru.sfedu.coursage.model;
  * MainProcessor-parameterizing package
  */
 public class MainProcessorArgs extends ArgumentPack {
-    private SoundData src;
-    private SoundData filter;
+    private SoundData src, filter, dst;
     private ArgumentPack processorArgs;
-    private String resultFile;
   
     public MainProcessorArgs () {
     }
@@ -18,6 +16,13 @@ public class MainProcessorArgs extends ArgumentPack {
     public SoundData getSrc () {
     return src;
   }
+
+    public void setDst(SoundData dst) {
+        this.dst = dst;
+    }
+    public SoundData getDst() {
+        return dst;
+    }
 
     public void setFilter (SoundData newVar) {
     filter = newVar;
@@ -33,19 +38,12 @@ public class MainProcessorArgs extends ArgumentPack {
     return processorArgs;
   }
 
-    public void setResultFile(String resultFile) {
-        this.resultFile = resultFile;
-    }
-    public String getResultFile() {
-        return resultFile;
-    }
-
     @Override
     public String toString() {
       return "MPArgs ["+
               "src="+src.getId()+", "+
               "filter="+(filter==null?"null":filter.getId())+", "+
-              "result="+resultFile+", "+
+              "dst="+dst.getId()+", "+
               "error="+getErrorCode()+", "+
               "warn="+getWarnCode()+", " +
               processorArgs.toString()+"]<-"+super.toString();
