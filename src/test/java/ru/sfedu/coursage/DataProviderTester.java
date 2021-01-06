@@ -8,7 +8,46 @@ import ru.sfedu.coursage.model.dataProviders.DataProvider;
 
 
 public abstract class DataProviderTester {
-    AbstractDataProvider provider = new CSVDataProvider();
+    AbstractDataProvider provider;
+
+
+    public void operate() {
+
+    }
+    public void createSoundData() throws Exception {
+        Assert.assertEquals(DataProvider.Error.FAILED, provider.createSoundData(""));
+
+        DataProvider.ProviderResult result = provider.createSoundData(Constants.TEST_WAV_FILE);
+        Assert.assertEquals(DataProvider.Error.SUCCESS, result.getError());
+        Assert.assertEquals(false, result.getObject()==null);
+        Assert.assertEquals(false, ((SoundData)result.getObject()).getData()==null);
+    }
+    public void createEmptySoundData() {
+        Assert.assertEquals(DataProvider.Error.FAILED, provider.createEmptySoundData(0, 0, 0, 0, ""));
+        Assert.assertEquals(DataProvider.Error.FAILED, provider.createEmptySoundData(8, 100, 1, 20050, Constants.DATASOURCE_DIRECTORY+"/CESD_test.wav"));
+    }
+
+    public void createCompressorArgs() {
+
+    }
+    public void createConverterArgs() {
+
+    }
+    public void createEqualizerArgs() {
+
+    }
+    public void createMixerArgs() {
+
+    }
+    public void createMultiplierArgs() {
+
+    }
+    public void createNormalizerArgs() {
+
+    }
+    public void createShifterArgs() {
+
+    }
 
     public void soundDataCRUD() throws Exception {
         DataProvider.ProviderResult result;

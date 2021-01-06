@@ -5,6 +5,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 
+/**
+ * class-container of sound PCM
+ */
 public class DataArray implements Serializable {
     public static Logger logger = LogManager.getLogger();
 
@@ -155,6 +158,8 @@ public class DataArray implements Serializable {
      * @return empty initialized DataArray
      */
     public static DataArray createEmpty(int size, int bits, int channels, int sampleRate) {
+        if(size<=0) return null;
+        if(bits!=8 && bits!=16 && bits!=24 && bits!=32) return null;
         DataArray array = new DataArray();
         array.size=size;
         array.bits=bits;

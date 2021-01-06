@@ -118,7 +118,7 @@ public class SoundData implements Serializable {
               + ", ch=" + channels
               + ", sr=" + sampleRate
               + ", sf=" + sourceFile
-              + ", data="+data.toString()+"]";
+              + ", data="+(data==null?"null":data.toString())+"]";
   }
   @Override
   public boolean equals(Object o) {

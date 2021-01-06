@@ -50,6 +50,32 @@ public abstract class AbstractDataProvider implements DataProvider {
         result.getObject().setId(nextSoundDataId());
         return writeSoundData(result.getObject());
     }
+    /**
+     * creates transient SoundData with given attributes
+     * @param id
+     * @param bits
+     * @param channels
+     * @param sampleRate
+     * @param src
+     * @return
+     * @throws Exception
+     */
+    public ProviderResult<SoundData> createSoundData(long id, int bits, int channels, int sampleRate, @NotNull String src) throws Exception {
+        logger.debug("SoundData creating...");
+        SoundData data = new SoundData();
+        data.setId(id);
+        data.setBitness(SoundData.Bitness.valueOf(bits));
+        data.setChannels(channels);
+        data.setSourceFile(src);
+        data.setSampleRate(sampleRate);
+        data.setData(DataArray.readWavDataArray(data));
+        if(data.getData()==null) {
+            logger.error("DataArray init failed");
+            return new ProviderResult(Error.FAILED);
+        }
+        logger.info("SoundData created");
+        return new ProviderResult(data);
+    }
 
     //----------------------PUBLIC_API----------------------------------
     /**
@@ -148,31 +174,6 @@ public abstract class AbstractDataProvider implements DataProvider {
         return extWriteSoundData(data);
     }
     /**
-     * create transient SoundData from parameters
-     * @param bits count of bits in samples
-     * @param channels count of channels
-     * @param sampleRate sample rate
-     * @param src source file
-     * @return SUCCESS + SoundData if succeed, FAILED if DataArray initialization failed
-     * @throws Exception
-     */
-    public ProviderResult<SoundData> createSoundData(long id, int bits, int channels, int sampleRate, @NotNull String src) throws Exception {
-        logger.debug("SoundData creating...");
-        SoundData data = new SoundData();
-        data.setId(id);
-        data.setBitness(SoundData.Bitness.valueOf(bits));
-        data.setChannels(channels);
-        data.setSourceFile(src);
-        data.setSampleRate(sampleRate);
-        data.setData(DataArray.readWavDataArray(data));
-        if(data.getData()==null) {
-            logger.error("DataArray init failed");
-            return new ProviderResult(Error.FAILED);
-        }
-        logger.info("SoundData created");
-        return new ProviderResult(data);
-    }
-    /**
      * create transient SoundData with empty DataArray
      * @param bits count of bits per sample
      * @param size buffer size in samples
@@ -264,7 +265,7 @@ public abstract class AbstractDataProvider implements DataProvider {
     }
 
 
-    //--------------------SOUND_DATA_CRUD-------------------------------
+    //--------------------SOUND_DATA_RWR-------------------------------
     /**
      * get free SoundData id
      * @return the least free id in dataSource, -1 if no free values available
@@ -280,13 +281,10 @@ public abstract class AbstractDataProvider implements DataProvider {
         readAllSoundData(set);
 
         Iterator<SoundData> iterator = set.iterator();
-        for(long i=0; i<set.size()+1; i++)
-            if(!iterator.hasNext())
+        for(long i=0; i<set.size(); i++)
+            if(i<iterator.next().getId())
                 return i;
-            else if(i<iterator.next().getId())
-                return i;
-        logger.warn("no free SoundData id");
-        return -1;
+        return set.size();
     }
     /**
      * read SoundData by id
@@ -344,7 +342,7 @@ public abstract class AbstractDataProvider implements DataProvider {
     }
 
 
-    //-------------------ARGUMENT_PACKS_CRUD----------------------------
+    //-------------------ARGUMENT_PACKS_RWR----------------------------
     /**
      * get free ArgumentPack id
      * @param processorId identifier of ArgumentPack class
@@ -361,13 +359,10 @@ public abstract class AbstractDataProvider implements DataProvider {
         readAllArgumentPacks(set, processorId);
 
         Iterator<ArgumentPack> iterator = set.iterator();
-        for(long i=0; i<set.size()+1; i++)
-            if(!iterator.hasNext())
+        for(long i=0; i<set.size(); i++)
+            if(i<iterator.next().getId())
                 return i;
-            else if(i<iterator.next().getId())
-                return i;
-        logger.warn("no free ArgumentPack id");
-        return -1;
+        return set.size();
     }
     /**
      * read ArgumentPack by ids

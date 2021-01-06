@@ -85,10 +85,9 @@ public class Constants {
             ShifterArgs.class.getSimpleName()+      "(" + JDBC_COLUMNS_ARGUMENT_PACK+ ", " +JDBC_COLUMNS_SHIFTER    + ");";
 
 
-    public static String JDBC_REPLACE = ";";
     public static String JDBC_FORMAT_SELECT_ALL = "select * from %s";
     public static String JDBC_FORMAT_SELECT_ONE = "select * from %s where id=%d";
-    public static String JDBC_FORMAT_INSERT = "insert into %s(%s) values(%s)"+JDBC_REPLACE;
+    public static String JDBC_FORMAT_INSERT = "insert into %s(%s) values(%s)";
     public static String JDBC_FORMAT_REMOVE = "delete from %s where id=%d";
 
 }

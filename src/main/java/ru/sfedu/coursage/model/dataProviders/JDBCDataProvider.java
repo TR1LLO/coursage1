@@ -19,13 +19,13 @@ public class JDBCDataProvider extends AbstractDataProvider {
                 Constants.JDBC_PASSWORD);
         return !connection.isClosed();
     }
-    public ResultSet sqlQuery(String sql) throws SQLException {
+    //  for single-row query set.next call required before reading data!
+    private ResultSet sqlQuery(String sql) throws SQLException {
         statement = connection.createStatement();
         set = statement.executeQuery(sql);
-        set.next();
         return set;
     }
-    public ResultSet dmlQuery(String dml) throws SQLException {
+    private ResultSet dmlQuery(String dml) throws SQLException {
         statement = connection.createStatement();
         statement.executeUpdate(dml);
         set=statement.getResultSet();
@@ -248,6 +248,7 @@ public class JDBCDataProvider extends AbstractDataProvider {
                     Constants.JDBC_FORMAT_SELECT_ONE,
                     SoundData.class.getSimpleName(),
                     obj.getId()));
+            set.next();
             return new ProviderResult(readSoundData(set, true));
         }
         catch (SQLException e) {
@@ -280,13 +281,13 @@ public class JDBCDataProvider extends AbstractDataProvider {
                     Constants.JDBC_FORMAT_SELECT_ONE,
                     processorId.getPackageClass().getSimpleName(),
                     obj.getId()));
+            set.next();
+            return new ProviderResult(readArgumentPack(set, processorId));
         }
         catch (SQLException e){
             logger.error(e);
             return new ProviderResult(Error.BEAN_NOT_FOUND);
         }
-        ArgumentPack pack=readArgumentPack(set, processorId);
-        return new ProviderResult(pack);
     }
     public ProviderResult<ArgumentPack> extWriteArgumentPack(ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception {
         extRemoveArgumentPack(obj, processorId);
