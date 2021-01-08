@@ -4,8 +4,42 @@ import ru.sfedu.coursage.model.*;
 
 public class Constants {
     public static String DATASOURCE_DIRECTORY = "C:/Users/Argon/IdeaProjects/coursage";
-    public static String TEST_WAV_FILE = "C:/Users/Argon/IdeaProjects/coursage/bonk.wav";
 
+    //-----------------------------TESTS------------------------------------
+    public static String TEST_WAV_FILE = DATASOURCE_DIRECTORY+"/bonk.wav";
+    public static String TEST_WAV_FILE_DST = DATASOURCE_DIRECTORY+"/wav_test_dst.wav";
+    public static String TEST_INVALID_FILE = "";
+    public static int TEST_SOUNDDATA_BITS = SoundData.Bitness.CHAR_8.getBits();
+    public static int TEST_SOUNDDATA_SIZE = 4096;
+    public static int TEST_SOUNDDATA_CHANNELS = 1;
+    public static int TEST_SOUNDDATA_SAMPLERATE = 20050;
+
+
+    public static float TEST_COMPRESSOR_POWER = 0.9f;
+    public static boolean TEST_COMPRESSOR_DISTORTION = false;
+
+    public static SoundData.Bitness TEST_CONVERTER_BITNESS = SoundData.Bitness.CHAR_8;
+    public static int TEST_CONVERTER_CHANNELS = 1;
+    public static int TEST_CONVERTER_SAMPLERATE = 1;
+
+    public static float[] TEST_EQUALIZER_AMPS = {0, 0, 0, 0, 0, 2, 0, 0, 0, 0};
+
+    public static boolean TEST_MIXER_CHANNELMIXING = true;
+    public static boolean TEST_MIXER_COVER = true;
+
+    public static boolean TEST_MULTIPLIER_AVERAGE = true;
+    public static int TEST_MULTIPLIER_COUNT = 4;
+
+    public static float TEST_NORMALIZER_AMP = 4.0f;
+    public static boolean TEST_NORMALIZER_HARD = false;
+    public static int TEST_NORMALIZER_PERIOD = 1;
+
+    public static float TEST_SHIFTER_FREQUENCY = 100.0f;
+    public static float TEST_SHIFTER_STEP = 1.0f;
+    public static int TEST_SHIFTER_RADIUS = 20;
+
+
+    //------------------------------JDBC-------------------------------------
     public static String JDBC_ADMIN = "admin";
     public static String JDBC_PASSWORD = "password";
     public static String JDBC_URL = "jdbc:h2:C:\\Users\\Argon\\IdeaProjects\\coursage";
@@ -32,16 +66,11 @@ public class Constants {
                     "channels integer, " +
                     "sampleRate integer";
     public static String JDBC_COLUMNS_EQUALIZER =
-            "a0 real, " +
-                    "a1 real, " +
-                    "a2 real, " +
-                    "a3 real, " +
-                    "a4 real, " +
-                    "a5 real, " +
-                    "a6 real, " +
-                    "a7 real, " +
-                    "a8 real, " +
-                    "a9 real";
+            "a0 real, " + "a1 real, " +
+                    "a2 real, " + "a3 real, " +
+                    "a4 real, " + "a5 real, " +
+                    "a6 real, " + "a7 real, " +
+                    "a8 real, " + "a9 real";
     public static String JDBC_COLUMNS_MIXER =
             "channelMixing integer, " +
                     "cover integer";

@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class XMLDataProvider extends AbstractDataProvider {
     public static String getPath(Class bean) {
-        return Constants.DATASOURCE_DIRECTORY+"xml/" +bean.getSimpleName()+".xml";
+        return Constants.DATASOURCE_DIRECTORY+"/xml/" +bean.getSimpleName()+".xml";
     }
 
     public <T> ProviderResult<Collection<T>> readAll(Collection<T> container, Class bean) throws Exception {
@@ -83,7 +83,7 @@ public class XMLDataProvider extends AbstractDataProvider {
         readAll(list, bean);
 
         if(!list.remove(obj))
-            return new ProviderResult(obj);
+            return new ProviderResult(Error.BEAN_NOT_FOUND, obj);
         writeAll(list, obj.getClass());
         logger.warn("bean removed");
         return new ProviderResult(obj);

@@ -13,12 +13,14 @@ public class JDBCDataProvider extends AbstractDataProvider {
     private Statement statement;
     private Connection connection;
     private ResultSet set;
+    private int dmlImpact = 0;
     public boolean connect() throws Exception {
         connection = DriverManager.getConnection(Constants.JDBC_URL,
                 Constants.JDBC_ADMIN,
                 Constants.JDBC_PASSWORD);
         return !connection.isClosed();
     }
+
     //  for single-row query set.next call required before reading data!
     private ResultSet sqlQuery(String sql) throws SQLException {
         statement = connection.createStatement();
@@ -27,7 +29,7 @@ public class JDBCDataProvider extends AbstractDataProvider {
     }
     private ResultSet dmlQuery(String dml) throws SQLException {
         statement = connection.createStatement();
-        statement.executeUpdate(dml);
+        dmlImpact = statement.executeUpdate(dml);
         set=statement.getResultSet();
         statement.close();
         return set;
@@ -64,7 +66,7 @@ public class JDBCDataProvider extends AbstractDataProvider {
         return commonPackValues(args)+", "+args.getPower()+", "+(args.isDistortion()?1:0);
     }
     private String converterValues(ConverterArgs args) {
-        return commonPackValues(args)+", "+args.getBitness()+", "+args.getChannels()+", "+args.getSampleRate();
+        return commonPackValues(args)+", '"+args.getBitness()+"', "+args.getChannels()+", "+args.getSampleRate();
     }
     private String mixerValues(MixerArgs args) {
         return commonPackValues(args)+", "+(args.isChannelMixing()?1:0)+", "+(args.isCover()?1:0);
@@ -249,7 +251,8 @@ public class JDBCDataProvider extends AbstractDataProvider {
                     SoundData.class.getSimpleName(),
                     obj.getId()));
             set.next();
-            return new ProviderResult(readSoundData(set, true));
+            SoundData data = readSoundData(set, true);
+            return new ProviderResult(data==null? Error.BEAN_NOT_FOUND: Error.SUCCESS, data);
         }
         catch (SQLException e) {
             return new ProviderResult(Error.BEAN_NOT_FOUND);
@@ -271,7 +274,7 @@ public class JDBCDataProvider extends AbstractDataProvider {
                 Constants.JDBC_FORMAT_REMOVE,
                 SoundData.class.getSimpleName(),
                 obj.getId()));
-        return new ProviderResult(obj);
+        return new ProviderResult(dmlImpact==0? Error.BEAN_NOT_FOUND:Error.SUCCESS, obj);
     }
 
     public ProviderResult<ArgumentPack> extReadArgumentPack(ArgumentPack obj, ArgumentPack.ProcessorId processorId) throws Exception {
@@ -282,7 +285,8 @@ public class JDBCDataProvider extends AbstractDataProvider {
                     processorId.getPackageClass().getSimpleName(),
                     obj.getId()));
             set.next();
-            return new ProviderResult(readArgumentPack(set, processorId));
+            ArgumentPack pack = readArgumentPack(set, processorId);
+            return new ProviderResult(pack==null? Error.BEAN_NOT_FOUND: Error.SUCCESS, pack);
         }
         catch (SQLException e){
             logger.error(e);
@@ -316,6 +320,6 @@ public class JDBCDataProvider extends AbstractDataProvider {
                 Constants.JDBC_FORMAT_REMOVE,
                 processorId.getPackageClass().getSimpleName(),
                 obj.getId()));
-        return new ProviderResult(obj);
+        return new ProviderResult(dmlImpact==0? Error.BEAN_NOT_FOUND: Error.SUCCESS, obj);
     }
 }

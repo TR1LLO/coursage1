@@ -94,6 +94,8 @@ public abstract class AbstractDataProvider implements DataProvider {
         logger.debug("src init");
         //-----------------src_init--------------------
         SoundData src;
+        if(srcId==-1)
+            return new ProviderResult(Error.FAILED);
         result=readSoundData(srcId);
         if(result.error==Error.BEAN_NOT_FOUND) {
             logger.error("src not found");
@@ -220,7 +222,8 @@ public abstract class AbstractDataProvider implements DataProvider {
     public ProviderResult<ArgumentPack> createEqualizerArgs(float[] amplitudes) throws Exception {
         logger.debug("EqualizerArgs creating...");
         EqualizerArgs args=new EqualizerArgs();
-        args.setAmps(amplitudes);
+        if(amplitudes!=null)
+            args.setAmps(amplitudes);
 
         args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
@@ -296,8 +299,12 @@ public abstract class AbstractDataProvider implements DataProvider {
         logger.info("SoundData reading...");
         SoundData data = new SoundData();
         data.setId(id);
+        if(id<0) {
+            logger.warn("invalid id");
+            return new ProviderResult(Error.BEAN_NOT_FOUND);
+        }
         ProviderResult result = extReadSoundData(data);
-        if(result.getError()==Error.BEAN_NOT_FOUND) {
+        if(result.getError()!=Error.SUCCESS) {
             logger.warn("SoundData not found");
             return result;
         }
@@ -338,6 +345,10 @@ public abstract class AbstractDataProvider implements DataProvider {
         logger.warn("SoundData removing...");
         SoundData data=new SoundData();
         data.setId(id);
+        if(id<0) {
+            logger.warn("invalid id");
+            return new ProviderResult(Error.BEAN_NOT_FOUND);
+        }
         return extRemoveSoundData(data);
     }
 
@@ -375,6 +386,10 @@ public abstract class AbstractDataProvider implements DataProvider {
         logger.debug("ArgumentPack reading...");
         ArgumentPack pack = processor.newPackage();
         pack.setId(id);
+        if(id<0) {
+            logger.warn("invalid id");
+            return new ProviderResult(Error.BEAN_NOT_FOUND);
+        }
         return extReadArgumentPack(pack, processor);
     }
     /**
@@ -398,6 +413,10 @@ public abstract class AbstractDataProvider implements DataProvider {
         logger.debug("ArgumentPack removing...");
         ArgumentPack pack = processor.newPackage();
         pack.setId(id);
+        if(id<0) {
+            logger.warn("invalid id");
+            return new ProviderResult(Error.BEAN_NOT_FOUND);
+        }
         return extRemoveArgumentPack(pack, processor);
     }
 }

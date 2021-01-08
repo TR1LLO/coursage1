@@ -298,7 +298,15 @@ public class DataArray implements Serializable {
         return soundData;
     }
     public static DataArray readWavDataArray(SoundData soundData) throws IOException {
-        FileInputStream stream = new FileInputStream(soundData.getSourceFile());
+        FileInputStream stream;
+        try {
+            stream = new FileInputStream(soundData.getSourceFile());
+        }
+        catch (FileNotFoundException e) {
+            logger.warn(e);
+            return null;
+        }
+
         DataArray data = new DataArray();
         soundData.setData(data);
 

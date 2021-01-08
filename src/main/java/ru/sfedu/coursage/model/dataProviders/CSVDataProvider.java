@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class CSVDataProvider extends AbstractDataProvider {
     public static String getPath(Class bean) {
-        return Constants.DATASOURCE_DIRECTORY+"csv/" +bean.getSimpleName()+".csv";
+        return Constants.DATASOURCE_DIRECTORY+"/csv/" +bean.getSimpleName()+".csv";
     }
 
     private <T>ProviderResult<Collection<T>> readAll(Collection<T> container, Class bean) throws Exception {
@@ -32,12 +32,12 @@ public class CSVDataProvider extends AbstractDataProvider {
                     .parse();
             reader.close();
             if(list.size()==0) {
-                logger.warn("readAll empty file "+path);
+                logger.warn("readAll empty file");
                 return new ProviderResult(DataProvider.Error.EMPTY_SOURCE);
             }
             else {
                 container.addAll(list);
-                logger.info("readAll succeed "+path);
+                logger.info("readAll succeed");
                 return new ProviderResult(container);
             }
         }
@@ -59,7 +59,7 @@ public class CSVDataProvider extends AbstractDataProvider {
                 .build();
         beanToCsv.write(container.iterator());
         writer.close();
-        logger.info("readAll succeed"+path);
+        logger.info("readAll succeed");
         return new ProviderResult(container);
     }
 
@@ -91,7 +91,7 @@ public class CSVDataProvider extends AbstractDataProvider {
         readAll(list, bean);
 
         if(!list.remove(obj))
-            return new ProviderResult(obj);
+            return new ProviderResult(Error.BEAN_NOT_FOUND, obj);
         writeAll(list, obj.getClass());
         logger.warn("bean removed");
         return new ProviderResult(obj);
