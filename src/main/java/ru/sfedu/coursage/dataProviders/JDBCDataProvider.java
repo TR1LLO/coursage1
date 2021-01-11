@@ -1,4 +1,4 @@
-package ru.sfedu.coursage.model.dataProviders;
+package ru.sfedu.coursage.dataProviders;
 
 import ru.sfedu.coursage.Constants;
 import ru.sfedu.coursage.model.*;
@@ -16,7 +16,7 @@ public class JDBCDataProvider extends AbstractDataProvider {
     private int dmlImpact = 0;
     public boolean connect() throws Exception {
         connection = DriverManager.getConnection(Constants.JDBC_URL,
-                Constants.JDBC_ADMIN,
+                Constants.JDBC_USER,
                 Constants.JDBC_PASSWORD);
         return !connection.isClosed();
     }

@@ -1,57 +1,65 @@
-package ru.sfedu.coursage.model.dataProviders;
+package ru.sfedu.coursage.dataProviders;
 
-import org.simpleframework.xml.Serializer;
-import org.simpleframework.xml.core.Persister;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import ru.sfedu.coursage.Constants;
 import ru.sfedu.coursage.model.ArgumentPack;
 import ru.sfedu.coursage.model.SoundData;
 
-import javax.xml.stream.XMLStreamException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 /**
- * class-implementer of XML-based API
+ * class-implementer of CSV-based API
  */
-public class XMLDataProvider extends AbstractDataProvider {
+public class CSVDataProvider extends AbstractDataProvider {
     public static String getPath(Class bean) {
-        return Constants.DATASOURCE_DIRECTORY+"/xml/" +bean.getSimpleName()+".xml";
+        return Constants.CSV_DIRECTORY +bean.getSimpleName()+Constants.CSV_FORMAT;
     }
 
-    public <T> ProviderResult<Collection<T>> readAll(Collection<T> container, Class bean) throws Exception {
-        logger.debug("xml parsing...");
+    private <T>ProviderResult<Collection<T>> readAll(Collection<T> container, Class bean) throws Exception {
+        String path=getPath(bean);
         try {
-            Serializer serializer = new Persister();
-            FileReader reader = new FileReader(getPath(bean));
-            XMLWrapper<T>wrapper=serializer.read(XMLWrapper.class, reader);
+            CSVReader reader = new CSVReader(new FileReader(path));
+            List<T> list = new CsvToBeanBuilder<T>(reader)
+                    .withEscapeChar('\0')
+                    .withType(bean)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build()
+                    .parse();
             reader.close();
-            container.addAll(wrapper.getList());
+            if(list.size()==0) {
+                logger.warn("readAll empty file");
+                return new ProviderResult(DataProvider.Error.EMPTY_SOURCE);
+            }
+            else {
+                container.addAll(list);
+                logger.info("readAll succeed");
+                return new ProviderResult(container);
+            }
         }
-        catch (XMLStreamException e) {
-            logger.warn("xml file is empty");
-            return new ProviderResult(Error.EMPTY_SOURCE);
+        catch(FileNotFoundException e) {
+            logger.debug(e);
+            return new ProviderResult(DataProvider.Error.FAILED);
         }
-        catch (IOException e) {
-            logger.error(e);
-            return new ProviderResult(Error.FAILED);
-        }
-        logger.debug("xml parsed");
-        return new ProviderResult(container);
     }
-    public <T> ProviderResult<Collection<T>> writeAll(Collection<T> container, Class bean) throws Exception {
-        logger.debug("xml file writing...");
-        if(container.size()==0)
-            logger.warn("collection is empty");
-        Serializer serializer = new Persister();
-        FileWriter writer = new FileWriter(getPath(bean));
-        XMLWrapper<T> wrapper = new XMLWrapper<>(container);
-        serializer.write(wrapper, writer);
+    private <T>ProviderResult<Collection<T>> writeAll(Collection<T> container, Class bean) throws Exception {
+        String path=getPath(bean);
+        if(container.size() == 0) {
+            logger.warn("writeAll empty container");
+            return new ProviderResult(DataProvider.Error.EMPTY_SOURCE);
+        }
+        CSVWriter writer = new CSVWriter(new FileWriter(path));
+
+        StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer)
+                .withEscapechar('\0')
+                .build();
+        beanToCsv.write(container.iterator());
         writer.close();
-        logger.debug("xml writing succeed");
+        logger.info("readAll succeed");
         return new ProviderResult(container);
     }
 

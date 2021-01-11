@@ -1,4 +1,4 @@
-package ru.sfedu.coursage.model.dataProviders;
+package ru.sfedu.coursage.dataProviders;
 
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;

@@ -1,7 +1,7 @@
 package ru.sfedu.coursage;
 
 import org.junit.jupiter.api.Test;
-import ru.sfedu.coursage.model.dataProviders.CSVDataProvider;
+import ru.sfedu.coursage.dataProviders.CSVDataProvider;
 
 public class CSVDataProviderTester extends DataProviderTester {
     CSVDataProviderTester() {

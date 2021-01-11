@@ -8,8 +8,8 @@ import ru.sfedu.coursage.model.SoundData;
  */
 public class Normalizer extends SoundDataProcessor {
     NormalizerArgs args;
-    public Normalizer (SoundData src, SoundData dst, NormalizerArgs args) {
-        super(src, null, dst);
+    public Normalizer (SoundData src, SoundData filter, SoundData dst, NormalizerArgs args) {
+        super(src, filter, dst);
         this.args=args;
     }
 

@@ -1,10 +1,7 @@
 package ru.sfedu.coursage;
 
 import org.junit.jupiter.api.Test;
-import ru.sfedu.coursage.model.SoundData;
-import ru.sfedu.coursage.model.dataProviders.JDBCDataProvider;
-
-import java.util.ArrayList;
+import ru.sfedu.coursage.dataProviders.JDBCDataProvider;
 
 public class JDBCDataProviderTester extends DataProviderTester {
     JDBCDataProviderTester() throws Exception {

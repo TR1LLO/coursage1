@@ -12,8 +12,8 @@ public class Compressor extends SoundDataProcessor {
     DataArray in, out;
     float power;
     boolean distortion;
-    public Compressor(SoundData src, SoundData dst, CompressorArgs args) {
-        super(src, null, dst);
+    public Compressor(SoundData src, SoundData filter, SoundData dst, CompressorArgs args) {
+        super(src, filter, dst);
         this.args=args;
         in=src.getData();
         out= dst.getData();

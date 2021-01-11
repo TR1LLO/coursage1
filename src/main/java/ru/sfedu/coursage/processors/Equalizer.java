@@ -1,6 +1,4 @@
 package ru.sfedu.coursage.processors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import ru.sfedu.coursage.model.DataArray;
 import ru.sfedu.coursage.model.EqualizerArgs;
 import ru.sfedu.coursage.model.SoundData;
@@ -15,8 +13,8 @@ public class Equalizer extends SoundDataProcessor {
 
     private float[] amps;
     DataArray in, out;
-    public Equalizer (SoundData src, SoundData dst, EqualizerArgs args) {
-        super(src, null, dst);
+    public Equalizer (SoundData src, SoundData filter, SoundData dst, EqualizerArgs args) {
+        super(src, filter, dst);
         this.args=args;
 
         in=src.getData();

@@ -1,6 +1,5 @@
 package ru.sfedu.coursage.processors;
 
-import ru.sfedu.coursage.model.ArgumentPack;
 import ru.sfedu.coursage.model.ShifterArgs;
 import ru.sfedu.coursage.model.SoundData;
 
@@ -9,8 +8,8 @@ import ru.sfedu.coursage.model.SoundData;
  */
 public class Shifter extends SoundDataProcessor {
     private ShifterArgs args;
-    public Shifter(SoundData src, SoundData dst, ShifterArgs args) {
-        super(src, null, dst);
+    public Shifter(SoundData src, SoundData filter, SoundData dst, ShifterArgs args) {
+        super(src, filter, dst);
         this.args=args;
     }
 

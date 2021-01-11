@@ -2,9 +2,8 @@ package ru.sfedu.coursage;
 
 import org.junit.Assert;
 import ru.sfedu.coursage.model.*;
-import ru.sfedu.coursage.model.dataProviders.AbstractDataProvider;
-import ru.sfedu.coursage.model.dataProviders.CSVDataProvider;
-import ru.sfedu.coursage.model.dataProviders.DataProvider;
+import ru.sfedu.coursage.dataProviders.AbstractDataProvider;
+import ru.sfedu.coursage.dataProviders.DataProvider;
 
 
 public abstract class DataProviderTester {
@@ -17,7 +16,7 @@ public abstract class DataProviderTester {
     }
     public void createConverterArgs() throws Exception {
         Assert.assertEquals(DataProvider.Error.SUCCESS, provider.createConverterArgs(
-                Constants.TEST_CONVERTER_BITNESS,
+                Constants.TEST_CONVERTER_BITS,
                 Constants.TEST_CONVERTER_CHANNELS,
                 Constants.TEST_CONVERTER_SAMPLERATE).getError());
     }
@@ -64,7 +63,7 @@ public abstract class DataProviderTester {
                 Constants.TEST_SOUNDDATA_SIZE,
                 Constants.TEST_SOUNDDATA_CHANNELS,
                 Constants.TEST_SOUNDDATA_SAMPLERATE,
-                Constants.TEST_WAV_FILE_DST).getError());
+                Constants.TEST_WAV_DESTINATION).getError());
     }
     public void operateFail() throws Exception {
         Assert.assertEquals(DataProvider.Error.FAILED, provider.operate(-1, -1, -1, -1, null).getError());

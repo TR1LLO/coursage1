@@ -1,7 +1,7 @@
 package ru.sfedu.coursage;
 
 import org.junit.jupiter.api.Test;
-import ru.sfedu.coursage.model.dataProviders.XMLDataProvider;
+import ru.sfedu.coursage.dataProviders.XMLDataProvider;
 
 public class XMLDataProviderTester extends DataProviderTester {
     XMLDataProviderTester() {

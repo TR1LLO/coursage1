@@ -1,6 +1,6 @@
-package ru.sfedu.coursage.model.dataProviders;
+package ru.sfedu.coursage.dataProviders;
 import com.sun.istack.internal.NotNull;
-import com.sun.org.apache.xpath.internal.Arg;
+import com.sun.istack.internal.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.sfedu.coursage.model.*;
@@ -17,15 +17,50 @@ public abstract class AbstractDataProvider implements DataProvider {
     public static Logger logger = LogManager.getLogger();
 
     //---------------------EXTERNAL_API---------------------------------
-    /**
-     * run processing
-     * @param args filled MainProcessor argument package
-     * @return processed SoundData if succeed, null if couldn't identify processor type, args doesn't contain significant data or processor can't operate incoming data
-     */
-    public SoundData operate(@NotNull MainProcessorArgs args) {
-        logger.debug("MainProcessor operating started...");
-        MainProcessor processor = new MainProcessor(args);
+    public SoundData operateMixer       (@NotNull SoundData src, @NotNull  SoundData filter, @NotNull SoundData dst, @NotNull MixerArgs args) {
+        SoundDataProcessor processor = new Mixer(src, filter, dst, args);
         return processor.operate();
+    }
+    public SoundData operateMultiplier  (@NotNull SoundData src, @NotNull  SoundData filter, @NotNull SoundData dst, @NotNull MultiplierArgs args) {
+        SoundDataProcessor processor = new Multiplier(src, filter, dst, args);
+        return processor.operate();
+    }
+    public SoundData operateConverter   (@NotNull SoundData src, @Nullable SoundData filter, @NotNull SoundData dst, @NotNull ConverterArgs args) {
+        SoundDataProcessor processor = new Converter(src, filter, dst, args);
+        return processor.operate();
+    }
+    public SoundData operateCompressor  (@NotNull SoundData src, @Nullable SoundData filter, @NotNull SoundData dst, @NotNull CompressorArgs args) {
+        SoundDataProcessor processor = new Compressor(src, filter, dst, args);
+        return processor.operate();
+    }
+    public SoundData operateEqualizer   (@NotNull SoundData src, @Nullable SoundData filter, @NotNull SoundData dst, @NotNull EqualizerArgs args) {
+        SoundDataProcessor processor = new Equalizer(src, filter, dst, args);
+        return processor.operate();
+    }
+    public SoundData operateNormalizer  (@NotNull SoundData src, @Nullable SoundData filter, @NotNull SoundData dst, @NotNull NormalizerArgs args) {
+        SoundDataProcessor processor = new Normalizer(src, filter, dst, args);
+        return processor.operate();
+    }
+    public SoundData operateShifter     (@NotNull SoundData src, @Nullable SoundData filter, @NotNull SoundData dst, @NotNull ShifterArgs args) {
+        SoundDataProcessor processor = new Shifter(src, filter, dst, args);
+        return processor.operate();
+    }
+
+    public SoundData operate(@NotNull SoundData src, @Nullable SoundData filter, @NotNull SoundData dst, @NotNull ArgumentPack pack) {
+        logger.debug("operating started...");
+        pack.setCompleted(false);
+        switch (pack.getProcessorId()) {
+            case MIXER:         return operateMixer         (src, filter, dst, (MixerArgs)pack);
+            case SHIFTER:       return operateShifter       (src, filter, dst, (ShifterArgs)pack);
+            case CONVERTER:     return operateConverter     (src, filter, dst, (ConverterArgs)pack);
+            case EQUALIZER:     return operateEqualizer     (src, filter, dst, (EqualizerArgs)pack);
+            case COMPRESSOR:    return operateCompressor    (src, filter, dst, (CompressorArgs)pack);
+            case MULTIPLIER:    return operateMultiplier    (src, filter, dst, (MultiplierArgs)pack);
+            case NORMALIZER:    return operateNormalizer    (src, filter, dst, (NormalizerArgs)pack);
+            default:
+                logger.error("undefined processorId");
+                return null;
+        }
     }
     /**
      * create empty persistent SoundData clone
@@ -49,32 +84,6 @@ public abstract class AbstractDataProvider implements DataProvider {
         }
         result.getObject().setId(nextSoundDataId());
         return writeSoundData(result.getObject());
-    }
-    /**
-     * creates transient SoundData with given attributes
-     * @param id
-     * @param bits
-     * @param channels
-     * @param sampleRate
-     * @param src
-     * @return
-     * @throws Exception
-     */
-    public ProviderResult<SoundData> createSoundData(long id, int bits, int channels, int sampleRate, @NotNull String src) throws Exception {
-        logger.debug("SoundData creating...");
-        SoundData data = new SoundData();
-        data.setId(id);
-        data.setBitness(SoundData.Bitness.valueOf(bits));
-        data.setChannels(channels);
-        data.setSourceFile(src);
-        data.setSampleRate(sampleRate);
-        data.setData(DataArray.readWavDataArray(data));
-        if(data.getData()==null) {
-            logger.error("DataArray init failed");
-            return new ProviderResult(Error.FAILED);
-        }
-        logger.info("SoundData created");
-        return new ProviderResult(data);
     }
 
     //----------------------PUBLIC_API----------------------------------
@@ -147,17 +156,7 @@ public abstract class AbstractDataProvider implements DataProvider {
         ArgumentPack pack =(ArgumentPack)result.getObject();
 
         logger.info("bean loading complete");
-        //-----------------operating_start----------------
-        MainProcessorArgs args = new MainProcessorArgs();
-        args.setSrc(src);
-        args.setDst(dst);
-        args.setFilter(filter);
-        args.setProcessorId(pack.getProcessorId());
-        args.setProcessorArgs(pack);
-
-        args.setWarnCode(ArgumentPack.WarnCode.INDEFINITE);
-        args.setErrorCode(ArgumentPack.ErrorCode.INDEFINITE);
-        return writeSoundData(operate(args));
+        return writeSoundData(operate(src, filter, dst, pack));
     }
     /**
      * create persistent SoundData from .wav file
@@ -165,7 +164,7 @@ public abstract class AbstractDataProvider implements DataProvider {
      * @return FAILED if file contains format errors or couldn't be properly read, else SUCCESS + SoundData with external DataArray
      * @throws Exception
      */
-    public ProviderResult<SoundData> createSoundData(@NotNull String sourceFile) throws Exception {
+    public ProviderResult<SoundData> createSoundData(String sourceFile) throws Exception {
         logger.debug("SoundData creating...");
         SoundData data = DataArray.readWavSoundData(sourceFile);
         if(data==null) {
@@ -183,7 +182,7 @@ public abstract class AbstractDataProvider implements DataProvider {
      * @param destination file used to further storing DataArray
      * @return new transient SoundData object with initialized empty DataArray
      */
-    public ProviderResult<SoundData> createEmptySoundData(int bits, int size, int channels, int sampleRate, @NotNull String destination) {
+    public ProviderResult<SoundData> createEmptySoundData(int bits, int size, int channels, int sampleRate, String destination) {
         logger.debug("empty SoundData creating...");
         SoundData data = new SoundData();
         data.setBitness(SoundData.Bitness.valueOf(bits));
@@ -200,6 +199,13 @@ public abstract class AbstractDataProvider implements DataProvider {
     }
 
 
+    /**
+     * create persistent compressor preset
+     * @param power compression power
+     * @param distortion true for hard limitation, false for bit-grid overflow
+     * @return providerResult with SUCCESS + object if succeed, else writing error + transient object;
+     * @throws Exception
+     */
     public ProviderResult<ArgumentPack> createCompressorArgs(float power, boolean distortion) throws Exception {
         logger.debug("CompressorArgs creating...");
         CompressorArgs args=new CompressorArgs();
@@ -209,25 +215,44 @@ public abstract class AbstractDataProvider implements DataProvider {
         args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
     }
-    public ProviderResult<ArgumentPack> createConverterArgs(SoundData.Bitness bitness, int channels, int sampleRate) throws Exception {
+    /**
+     * create persistent converter preset
+     * @param bits target bitness
+     * @param channels target channel count
+     * @param sampleRate target sample rate
+     * @return providerResult with SUCCESS + object if succeed, else writing error + transient object;
+     * @throws Exception
+     */
+    public ProviderResult<ArgumentPack> createConverterArgs(int bits, int channels, int sampleRate) throws Exception {
         logger.debug("ConverterArgs creating...");
         ConverterArgs args=new ConverterArgs();
-        args.setBitness(bitness);
+        args.setBitness(SoundData.Bitness.valueOf(bits));
         args.setChannels(channels);
         args.setSampleRate(sampleRate);
 
         args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
     }
-    public ProviderResult<ArgumentPack> createEqualizerArgs(float[] amplitudes) throws Exception {
+    /**
+     * create persistent equalizer preset
+     * @param amps amplitude array for 10 exp bands from 0hz to src.sampleRate
+     * @return providerResult with SUCCESS + object if succeed, else writing error + transient object;
+     * @throws Exception
+     */
+    public ProviderResult<ArgumentPack> createEqualizerArgs(@NotNull float[] amps) throws Exception {
         logger.debug("EqualizerArgs creating...");
         EqualizerArgs args=new EqualizerArgs();
-        if(amplitudes!=null)
-            args.setAmps(amplitudes);
-
+        args.setAmps(amps);
         args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
     }
+    /**
+     * create persistent mixer preset
+     * @param channelMixing if true will mix only same channels, if false will cross-mix all channels
+     * @param cover if true, will add channels, if false will overwrite channels
+     * @return providerResult with SUCCESS + object if succeed, else writing error + transient object;
+     * @throws Exception
+     */
     public ProviderResult<ArgumentPack> createMixerArgs(boolean channelMixing, boolean cover) throws Exception {
         logger.debug("MixerArgs creating...");
         MixerArgs args=new MixerArgs();
@@ -237,6 +262,13 @@ public abstract class AbstractDataProvider implements DataProvider {
         args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
     }
+    /**
+     * create persistent multiplier preset
+     * @param average true for volume normalization
+     * @param count convolution subvector size
+     * @return providerResult with SUCCESS + object if succeed, else writing error + transient object;
+     * @throws Exception
+     */
     public ProviderResult<ArgumentPack> createMultiplierArgs(boolean average, int count) throws Exception {
         logger.debug("MixerArgs creating...");
         MultiplierArgs args=new MultiplierArgs();
@@ -246,6 +278,14 @@ public abstract class AbstractDataProvider implements DataProvider {
         args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
     }
+    /**
+     * create persistent normalizer preset
+     * @param amp result amplification
+     * @param hard if true will not affect volume proportions, if false will balance volume through time
+     * @param period dumping duration for !hard mode
+     * @return providerResult with SUCCESS + object if succeed, else writing error + transient object;
+     * @throws Exception
+     */
     public ProviderResult<ArgumentPack> createNormalizerArgs(float amp, boolean hard, int period) throws Exception {
         logger.debug("MixerArgs creating...");
         NormalizerArgs args=new NormalizerArgs();
@@ -256,6 +296,14 @@ public abstract class AbstractDataProvider implements DataProvider {
         args.setId(nextArgumentPackId(args.getProcessorId()));
         return writeArgumentPack(args);
     }
+    /**
+     * create persistent shifter preset
+     * @param frequency offset value in hz
+     * @param step time expansion; normally 1
+     * @param radius complex calculation precision; 20 usually enough
+     * @return providerResult with SUCCESS + object if succeed, else writing error + transient object;
+     * @throws Exception
+     */
     public ProviderResult<ArgumentPack> createShifterArgs(float frequency, float step, int radius) throws Exception {
         logger.debug("MixerArgs creating...");
         ShifterArgs args=new ShifterArgs();
@@ -406,7 +454,7 @@ public abstract class AbstractDataProvider implements DataProvider {
      * remove ArgumentPack by ids
      * @param id package id
      * @param processor processor id
-     * @return SUCCEED if removed successfully, BEAN_NOT_FOUND if dataSource doesn't contain equal bean, EMPTY_SOURCE if dataSource already empty, else FAILED
+     * @return SUCCEED if removed successfully, BEAN_NOT_FOUND if dataSource doesn't contain equal bean, else FAILED
      * @throws Exception
      */
     public ProviderResult<ArgumentPack> removeArgumentPack(long id, @NotNull ArgumentPack.ProcessorId processor) throws Exception {

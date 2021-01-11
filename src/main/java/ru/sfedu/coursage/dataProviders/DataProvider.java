@@ -1,7 +1,6 @@
-package ru.sfedu.coursage.model.dataProviders;
+package ru.sfedu.coursage.dataProviders;
 
 import com.sun.istack.internal.NotNull;
-import com.sun.org.apache.xpath.internal.Arg;
 import ru.sfedu.coursage.model.ArgumentPack;
 import ru.sfedu.coursage.model.SoundData;
 

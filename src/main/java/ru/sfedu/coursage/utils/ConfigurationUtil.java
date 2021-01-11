@@ -1,5 +1,7 @@
 package ru.sfedu.coursage.utils;
 
+import ru.sfedu.coursage.Constants;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,8 +15,6 @@ import java.util.Properties;
  * @author Boris Jmailov
  */
 public class ConfigurationUtil {
-
-    private static final String DEFAULT_CONFIG_PATH = "./src/main/resources/enviroment.properties";
     private static final Properties configuration = new Properties();
     /**
      * Hides default constructor
@@ -34,15 +34,14 @@ public class ConfigurationUtil {
      * @throws IOException In case of the configuration file read failure
      */
     private static void loadConfiguration() throws IOException{
-        File nf = new File(DEFAULT_CONFIG_PATH);
-        InputStream in = new FileInputStream(nf);// DEFAULT_CONFIG_PATH.getClass().getResourceAsStream(DEFAULT_CONFIG_PATH);
-        try {
-            configuration.load(in);
-        } catch (IOException ex) {
-            throw new IOException(ex);
-        } finally{
-            in.close();
-        }
+        File nf;
+        try { nf=new File(System.getProperty(Constants.CONFIG_PROPERTY)); }
+        catch(Exception e) { nf = new File(Constants.DEFAULT_CONFIG_PATH); }
+        InputStream in = new FileInputStream(nf);
+
+        try { configuration.load(in); }
+        catch (IOException ex) { throw new IOException(ex); }
+        finally { in.close(); }
     }
     /**
      * Gets configuration entry value
